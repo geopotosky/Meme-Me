@@ -242,6 +242,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         toolbarObject.hidden = false
         
         return memedImage
+        
     }
     
     //Save the Meme
