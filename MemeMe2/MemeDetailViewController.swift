@@ -16,15 +16,11 @@ class MemeDetailViewController : UIViewController, NSFetchedResultsControllerDel
     @IBOutlet weak var cancelButton: UIBarButtonItem!
     @IBOutlet weak var deleteButton: UIToolbar!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var deleteButtonLabel: UIBarButtonItem!
     
-    //var memedImage : UIImage!
     var memes: [Memes]!
-//    var memes: Memes!
     var memeIndex:Int!
     var memeIndexPath: NSIndexPath!
-    //var memedImage: NSData!
-//    var memedImage2: NSData!
-//    var memedImage3: NSData!
     
     var editMemeFlag: Bool!
 
@@ -36,25 +32,18 @@ class MemeDetailViewController : UIViewController, NSFetchedResultsControllerDel
         let object = UIApplication.sharedApplication().delegate
         let appDelegate = object as! AppDelegate
         memes = appDelegate.memes
+
+
+        //-Hide the Tab Bar
+        self.tabBarController?.tabBar.hidden = true
         
-        println("MemeDetailVC viewDidLoad")
-        
-//        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Trash, target: self, action: "deleteMeme")
-        
-//        let b1 = UIBarButtonItem(barButtonSystemItem: .Trash, target: self,  action: "deleteMeme")
-//        let b2 = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: "editMeme")
-//        let buttons = [b1, b2] as NSArray
-//        self.navigationItem.rightBarButtonItems = [b1, b2]
-        
-        fetchedResultsController.performFetch(nil)
+        do {
+            try fetchedResultsController.performFetch()
+        } catch _ {
+        }
         
         // Set the view controller as the delegate
         fetchedResultsController.delegate = self
-        
-//        //println("memes.count: \(memes.count)")
-//        println("memeIndex: \(memeIndex)")
-//        println("memeIndexPath: \(memeIndexPath)")
-//        println("editMemeFlag: \(editMemeFlag)")
         
         
     }
@@ -63,21 +52,7 @@ class MemeDetailViewController : UIViewController, NSFetchedResultsControllerDel
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         
-        println("MemeDetailVC viewWillAppear")
-        
-        //println("memes.count: \(memes.count)")
-        println("memeIndex: \(memeIndex)")
-        println("memeIndexPath: \(memeIndexPath)")
-        println("editMemeFlag: \(editMemeFlag)")
-        
-        //Get shared model info
-//        let object = UIApplication.sharedApplication().delegate
-//        let appDelegate = object as! AppDelegate
-//        memes = appDelegate.memes
-        
         let meme = fetchedResultsController.objectAtIndexPath(memeIndexPath) as! Memes
-        
-        println(meme.textTop)
         
         let finalImage = UIImage(data: meme.memedImage!)
         self.imageView!.image = finalImage
@@ -85,13 +60,13 @@ class MemeDetailViewController : UIViewController, NSFetchedResultsControllerDel
     }
 
     
-    //* - GEO: Add the "sharedContext" convenience property
+    //-Add the "sharedContext" convenience property
     lazy var sharedContext: NSManagedObjectContext = {
         return CoreDataStackManager.sharedInstance().managedObjectContext!
         }()
     
     
-    // Mark: - Fetched Results Controller
+    //-Fetched Results Controller
     
     lazy var fetchedResultsController: NSFetchedResultsController = {
         
@@ -111,45 +86,25 @@ class MemeDetailViewController : UIViewController, NSFetchedResultsControllerDel
     
     @IBAction func cancelMeme(sender: UIBarButtonItem) {
         self.dismissViewControllerAnimated(true, completion: nil)
-//        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MemeTableViewController") as! MemeTableViewController
-//        
-//        self.presentViewController(controller, animated: true, completion: nil)
-//        let controller = self.navigationController!.viewControllers[1] as! UIViewController
-//        self.navigationController?.popToViewController(controller, animated: true)
-        
     }
+    
+    
     @IBAction func editMeme(sender: UIBarButtonItem) {
-//    }
-//    func editMeme(){
-        println("Getting ready to edit the Meme")
-        let storyboard = self.storyboard
+
         let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
-        
-        //controller.memes = memes[index]
-        //controller.memes = self.memes
 
         controller.memeIndexPath2 = memeIndexPath
         controller.memeIndex2 = memeIndex
         controller.editMemeFlag = true
         
-        //controller.memedImage2 = meme.memedImage
-        
         self.presentViewController(controller, animated: true, completion: nil)
-        //self.navigationController!.pushViewController(controller, animated: true)
-        
-//        let controller = self.storyboard!.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
-//        controller.memeIndexPath2 = memeIndexPath
-//        controller.memeIndex2 = memeIndex
-//        controller.editMemeFlag = true
-//        self.navigationController!.pushViewController(controller, animated: true)
         
     }
     
     
     //function - Delete the selected meme
-    //@IBAction func deleteMemeButton(sender: UIButton) {
-    func deleteMeme(){
-        println("delete button pushed.")
+    @IBAction func deleteMemeButton(sender: UIBarButtonItem) {
+    //func deleteMeme(){
 
         //Create the AlertController
         let actionSheetController: UIAlertController = UIAlertController(title: "Warning!", message: "Do you really want to Delete the Meme?", preferredStyle: .Alert)
@@ -162,9 +117,9 @@ class MemeDetailViewController : UIViewController, NSFetchedResultsControllerDel
         
         //Create and add the Delete Meme action
         let deleteAction: UIAlertAction = UIAlertAction(title: "Delete Meme", style: .Default) { action -> Void in
-            let object = UIApplication.sharedApplication().delegate
-            let appDelegate = object as! AppDelegate
-            println(self.memeIndex)
+//            let object = UIApplication.sharedApplication().delegate
+//            let appDelegate = object as! AppDelegate
+            print(self.memeIndex)
             //appDelegate.memes.removeAtIndex(self.memeIndex)
             
             let meme = self.fetchedResultsController.objectAtIndexPath(self.memeIndexPath) as! Memes

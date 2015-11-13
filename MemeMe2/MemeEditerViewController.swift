@@ -56,11 +56,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         let object = UIApplication.sharedApplication().delegate
         let appDelegate = object as! AppDelegate
         memes = appDelegate.memes
-        
-//        println("memes.count: \(memes.count)")
-//        println("memeIndex: \(memeIndex2)")
-//        println("memeIndexPath: \(memeIndexPath2)")
-//        println("editMemeFlag: \(editMemeFlag)")
+
         
         //Add font attributes to top and bottom text fields
         self.textFieldTop.defaultTextAttributes = memeTextAttributes
@@ -76,12 +72,15 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         self.textFieldTop.delegate = topTextDelegate
         self.textFieldBottom.delegate = bottomTextDelegate
         
-        fetchedResultsController.performFetch(nil)
+        do {
+            try fetchedResultsController.performFetch()
+        } catch _ {
+        }
         
         // Set the view controller as the delegate
         fetchedResultsController.delegate = self
         
-        println("editMemeFlag: \(self.editMemeFlag)")
+        print("editMemeFlag: \(self.editMemeFlag)")
         //println("New Memes Count: \(appDelegate.memes.count)")
         
         if editMemeFlag == false {
@@ -164,7 +163,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     //Select an image for the Meme
     func imagePickerController(imagePicker: UIImagePickerController,
-        didFinishPickingMediaWithInfo info: [NSObject : AnyObject]){
+        didFinishPickingMediaWithInfo info: [String : AnyObject]){
             
             if let originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
                 self.imageViewPicker.image = originalImage
@@ -249,11 +248,11 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     func saveMeme() {
         
         //Create the Meme
-        let origImage = UIImageJPEGRepresentation(imageViewPicker.image, 100)
+        let origImage = UIImageJPEGRepresentation(imageViewPicker.image!, 100)
         let memedImage2 = UIImageJPEGRepresentation(memedImage, 100)
-        println("saveMeme memedImage: \(memedImage)")
+        print("saveMeme memedImage: \(memedImage)")
         
-        let memedImage3 = memedImage2
+        //let memedImage3 = memedImage2
         
         let memeToBeAdded = Memes(textTop: textFieldTop.text!, textBottom: textFieldBottom.text!, originalImage: origImage, memedImage: memedImage2, context: sharedContext)
         
@@ -262,8 +261,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         let appDelegate = object as! AppDelegate
         
         if editMemeFlag == true {
-            println("Remove Selected Object")
-            println(self.memeIndexPath2)
+            print("Remove Selected Object")
+            print(self.memeIndexPath2)
             let meme = self.fetchedResultsController.objectAtIndexPath(self.memeIndexPath2) as! Memes
             self.sharedContext.deleteObject(meme)
             CoreDataStackManager.sharedInstance().saveContext()
@@ -292,15 +291,15 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         } else {
             
             // And add append the actor to the array as well
-            println("Save Meme")
+            print("Save Meme")
 //            appDelegate.memes.append(memeToBeAdded)
             memes.append(memeToBeAdded)
             
 //            memeToBeAdded.memes = self.memes
             
             
-            println("Newly Saved Meme Index: \(appDelegate.memes.last)")
-            println("New Memes Count: \(appDelegate.memes.count)")
+            print("Newly Saved Meme Index: \(appDelegate.memes.last)")
+            print("New Memes Count: \(appDelegate.memes.count)")
         
             //memeIndexPath2 = appDelegate.memes.last
         
@@ -309,7 +308,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         
             // Finally we save the shared context, using the convenience method in
             // The CoreDataStackManager
-            println("Saving Memes")
+            print("Saving Memes")
             CoreDataStackManager.sharedInstance().saveContext()
             
             self.dismissViewControllerAnimated(true, completion: nil)

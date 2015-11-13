@@ -20,7 +20,6 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
     
     //Meme variables
     var memes: [Memes]!
-//    var memes: Memes!
     var memeIndex: Int!
     
     var editMemeFlag: Bool!
@@ -38,42 +37,34 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
     
     var cancelButton: UIBarButtonItem!
     
-    var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext!
+    //var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext!
     
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-//        memes = fetchAllMemes()
 
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Edit, target: self, action: "editButton")
-        //self.navigationItem.leftBarButtonItem = self.editButtonItem()
         
         bottomButton.hidden = true
         
         // Start the fetched results controller
-        var error: NSError?
-        fetchedResultsController.performFetch(&error)
-        
-        if let error = error {
-            println("Error performing initial fetch: \(error)")
+        do {
+            try fetchedResultsController.performFetch()
+        } catch _ {
         }
         
         fetchedResultsController.delegate = self
         
-//        //* - Bottom Button updater
-//        updateBottomButton()
-        
     }
     
     
-    // Layout the collection view cells
+    //-Layout the collection view cells
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        // Lay out the collection view so that there are 3 cells accrosse
+        // Lay out the collection view so that there are 3 cells across
         // with white space in between.
         let layout : UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -90,32 +81,28 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
     }
     
     
-    //Perform when view appears
+    //-Perform when view appears
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         
         editButtonFlag = true
         
-        //Get shared model info
-//        let object = UIApplication.sharedApplication().delegate
-//        let appDelegate = object as! AppDelegate
-//        memes = appDelegate.memes
-
+        //-Hide the tab bar
+        self.tabBarController?.tabBar.hidden = false
+        
         //Brute Force Reload the scene to view collection updates
         self.collectionView.reloadData()
-        
         
     }
     
     
-//    //* - GEO: Add the "sharedContext" convenience property
-//    lazy var sharedContext: NSManagedObjectContext = {
-//        return CoreDataStackManager.sharedInstance().managedObjectContext!
-//        }()
+    //-Add the "sharedContext" convenience property
+    lazy var sharedContext: NSManagedObjectContext = {
+        return CoreDataStackManager.sharedInstance().managedObjectContext!
+        }()
     
     
     func editButton(){
-        println("Hello Edit Button")
         
         if self.navigationItem.leftBarButtonItem?.title == "Done" {
             
@@ -135,20 +122,19 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
         
             bottomButton.hidden = false
             editButtonFlag = false
-            //updateBottomButton()
         }
     }
     
     
     //* - UICollectionView
     
-    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return self.fetchedResultsController.sections?.count ?? 0
-    }
+//    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+//        return self.fetchedResultsController.sections?.count ?? 0
+//    }
     
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let sectionInfo = self.fetchedResultsController.sections![section] as! NSFetchedResultsSectionInfo
+        let sectionInfo = self.fetchedResultsController.sections![section] 
         return sectionInfo.numberOfObjects
     }
     
@@ -156,15 +142,6 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
         
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("MemeCollectionViewCell", forIndexPath: indexPath) as! MemeCollectionViewCell
         
-//        let CellIdentifier = "MemeCell"
-        
-        // Here is how to replace the actors array using objectAtIndexPath
-        //let meme = fetchedResultsController.objectAtIndexPath(indexPath) as! Memes
-        
-//        let cell = tableView.dequeueReusableCellWithIdentifier(CellIdentifier) as! UITableViewCell
-        
-        // This is the new configureCell method
-        //configureCell(cell, withMeme: meme)
         configureCell(cell, atIndexPath: indexPath)
         
         return cell
@@ -176,37 +153,26 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
         if editButtonFlag == false {
             
         let cell = collectionView.cellForItemAtIndexPath(indexPath) as! MemeCollectionViewCell
-            
-        //let meme = fetchedResultsController.objectAtIndexPath(indexPath) as! Memes
         
         // Whenever a cell is tapped we will toggle its presence in the selectedIndexes array
-        if let index = find(selectedIndexes, indexPath) {
+        if let index = selectedIndexes.indexOf(indexPath) {
             selectedIndexes.removeAtIndex(index)
         } else {
-            //cell.cellOverlay.backgroundColor = UIColor.purpleColor()
             selectedIndexes.append(indexPath)
         }
         
         // Then reconfigure the cell
-        //self.configureCell(cell, atIndexPath: indexPath)
-            //configureCell(cell, withMeme: meme)
             configureCell(cell, atIndexPath: indexPath)
-            
-        
-        // And update the buttom button
-        //updateBottomButton()
         
         } else {
         
         let controller =
         storyboard!.instantiateViewControllerWithIdentifier("MemeDetailViewController") as! MemeDetailViewController
         // Similar to the method above
-        let meme = fetchedResultsController.objectAtIndexPath(indexPath) as! Memes
         
         controller.memes = self.memes
         controller.memeIndexPath = indexPath
         controller.memeIndex = indexPath.row
-        //controller.memedImage = meme.memedImage
         
         self.navigationController!.pushViewController(controller, animated: true)
             
@@ -226,9 +192,8 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
         
         //cell.textLabel!.text = meme.textTop
         cell.memeImageView!.image = finalImage
-        println("show it now")
         
-        if let index = find(self.selectedIndexes, indexPath) {
+        if let _ = self.selectedIndexes.indexOf(indexPath) {
             cell.memeImageView!.alpha = 0.5
         } else {
             cell.memeImageView!.alpha = 1.0
@@ -252,7 +217,7 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
         }()
     
     
-    //* - Fetched Results Controller Delegate
+    //-Fetched Results Controller Delegate
     
     // Whenever changes are made to Core Data the following three methods are invoked. This first method is used to
     // create three fresh arrays to record the index paths that will be changed.
@@ -267,6 +232,7 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
     
     // The second method may be called multiple times, once for each picture object that is added, deleted, or changed.
     // We store the index paths into the three arrays.
+
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         
         switch type{
@@ -295,8 +261,6 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
             break
         case .Move:
             //println("Move an item. We don't expect to see this in this app.")
-            break
-        default:
             break
         }
     }
@@ -329,19 +293,12 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
     }
     
     
-    //* - Click Button Decision function
+    //-Click Button Decision function
     
     @IBAction func buttonButtonClicked() {
         
-//        bottomButton.enabled = false
-        
-//        if selectedIndexes.isEmpty {
-//            self.navigationItem.leftBarButtonItem?.enabled = false
-//            deleteAllPictures()
-//        } else {
             deleteSelectedPictures()
-            
-//        }
+
     }
     
     //* - Delete All Pictures before adding new pictures function
@@ -367,7 +324,6 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
         
         for meme in memesToDelete {
             sharedContext.deleteObject(meme)
-//            bottomButton.title = "New Collection"
         }
         
         selectedIndexes = [NSIndexPath]()
@@ -377,102 +333,23 @@ class MemeCollectionViewController: UIViewController, UICollectionViewDataSource
     
     //* - Update the button label based on selection criteria
     
-    func updateBottomButton() {
-        if selectedIndexes.count > 0 {
-            //bottomButton.title = "Remove Selected Pictures"
-            bottomButton.titleLabel?.text = "Remove Selected Pictures"
-            
-            
-        } else {
-            //bottomButton.title = "New Collection"
-            bottomButton.titleLabel?.text = "Clear All Memes"
-        }
-    }
-
-    
-    
-//*---------- OLD CODE ---------------------------*//
-    
-//    func fetchAllMemes() -> [Memes] {
-//        let error: NSErrorPointer = nil
-//        
-//        // Create the Fetch Request
-//        let fetchRequest = NSFetchRequest(entityName: "Memes")
-//        
-//        // Execute the Fetch Request
-//        let results = sharedContext.executeFetchRequest(fetchRequest, error: error)
-//        
-//        println("Fetching Memes")
-//        
-//        // Check for Errors
-//        if error != nil {
-//            println("Error in fectchAllActors(): \(error)")
+//    func updateBottomButton() {
+//        if selectedIndexes.count > 0 {
+//            //bottomButton.title = "Remove Selected Pictures"
+//            bottomButton.titleLabel?.text = "Remove Selected Pictures"
+//            
+//            
+//        } else {
+//            //bottomButton.title = "New Collection"
+//            bottomButton.titleLabel?.text = "Clear All Memes"
 //        }
-//        
-//        // Return the results, cast to an array of Meme objects
-//        return results as! [Memes]
-//    }
-    
-    
-//    //Function - Collection View Data Source
-//    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        
-////        //Check to see if you have any memes. If not, go directly to the Edit Screen.
-////        if memes.count == 0 {
-////           
-////            let actionSheetController: UIAlertController = UIAlertController(title: "Zippo!", message: "No Memes. Press OK to create a Meme", preferredStyle: .ActionSheet)
-////            
-////            //Create and add the OK Meme action
-////            let okAction: UIAlertAction = UIAlertAction(title: "OK", style: .Default) { action -> Void in
-////                
-////                let storyboard = self.storyboard
-////                let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
-////                self.presentViewController(controller, animated: true, completion: nil)
-////            }
-////            actionSheetController.addAction(okAction)
-////            
-////            //Present the AlertController
-////            self.presentViewController(actionSheetController, animated: true, completion: nil)
-////            
-////        }
-//        return memes.count
-//    }
-//    
-//    //Set the collection view cell
-//    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-//        
-//        //Set the image for the collection
-//        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("MemeCollectionViewCell", forIndexPath: indexPath) as! MemeCollectionViewCell
-//        let meme = memes[indexPath.item]
-//        
-//        let memeImage2 = meme.memedImage
-//        let finalImage = UIImage(data: memeImage2!)
-//        
-//        //cell.textLabel!.text = meme.textTop
-//        cell.memeImageView!.image = finalImage
-//        
-//        //cell.memeImageView?.image = memeElement.memedImage as? UIImage
-//        return cell
-//    }
-//    
-//    //If a collection cell is selected, pull up the Meme Details page and display the selected Meme
-//    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath:NSIndexPath)
-//    {
-//        let detailController = self.storyboard!.instantiateViewControllerWithIdentifier("MemeDetailViewController")! as! MemeDetailViewController
-////        detailController.memes = self.memes[indexPath.row]
-////        detailController.memeIndex = indexPath.row
-//        
-//        self.navigationController!.pushViewController(detailController, animated: true)
-//        
-//
 //    }
 
     
     
-    //Button Function - Create a New Meme
+    //-Create a New Meme
     @IBAction func memeEditButton(sender: UIBarButtonItem) {
-        
-        let storyboard = self.storyboard
+
         let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
         controller.editMemeFlag = false
         self.presentViewController(controller, animated: true, completion: nil)

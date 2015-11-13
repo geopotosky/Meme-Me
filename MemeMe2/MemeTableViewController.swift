@@ -16,7 +16,6 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
     @IBOutlet weak var tableView: UITableView!
     
     var memes: [Memes]!
-//    var memes: Memes!
     var memeIndex: Int!
     var memeIndexPath: NSIndexPath!
     var editMemeFlag: Bool!
@@ -25,18 +24,21 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        memes = fetchAllMemes()
-//        getMemes()
-        
         self.navigationItem.leftBarButtonItem = self.editButtonItem()
-        //self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Add, target: self, action: "addActor")
+
+    
+    //self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Add, target: self, action: "addActor")
         
-//                        let b1 = UIBarButtonItem(barButtonSystemItem: .Trash, target: self,  action: "barButtonItemClicked")
-//                        let b2 = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: "barButtonItemClicked")
-//                        let buttons = [b1, b2] as NSArray
-//                        self.navigationItem.leftBarButtonItems = [b1, b2]
+    //                        let b1 = UIBarButtonItem(barButtonSystemItem: .Trash, target: self,  action: "barButtonItemClicked")
+    //                        let b2 = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: "barButtonItemClicked")
+    //                        let buttons = [b1, b2] as NSArray
+    //                        self.navigationItem.leftBarButtonItems = [b1, b2]
         
-        fetchedResultsController.performFetch(nil)
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch _ {
+        }
         
         // Set the view controller as the delegate
         fetchedResultsController.delegate = self
@@ -48,15 +50,11 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         
-        //Get shared model info
-//        let object = UIApplication.sharedApplication().delegate
-//        let appDelegate = object as! AppDelegate
-//        memes = appDelegate.memes
+        //-Hide the tab bar
+        self.tabBarController?.tabBar.hidden = false
         
         //Brute Force Reload the scene to view table updates
         self.tableView.reloadData()
-        
-//        println("Meme counter: \(memes.count)")
 
     }
     
@@ -73,8 +71,7 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
         }()
     
     
-    // Mark: - Fetched Results Controller
-    
+    //-Fetched Results Controller
     lazy var fetchedResultsController: NSFetchedResultsController = {
         
         let fetchRequest = NSFetchRequest(entityName: "Memes")
@@ -92,8 +89,7 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
 
     
     
-    //* - Configure Cell
-    
+    //-Configure Cell
     func configureCell(cell: UITableViewCell, withMeme meme: Memes) {
     
         let memeImage2 = meme.memedImage
@@ -101,7 +97,6 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
         
         cell.textLabel!.text = meme.textTop
         cell.imageView!.image = finalImage
-        println("show it now")
         
     }
 
@@ -109,10 +104,7 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
 
     //function - Table View Data Source
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionInfo = self.fetchedResultsController.sections![section] as! NSFetchedResultsSectionInfo
-        
-        //println("First memes.count: \(memes.count)")
-        
+        let sectionInfo = self.fetchedResultsController.sections![section]
         
         //Check to see if you have any memes. If not, go directly to the Edit Screen.
         if sectionInfo.numberOfObjects == 0 {
@@ -122,7 +114,6 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
             //Create and add the Delete Meme action
             let okAction: UIAlertAction = UIAlertAction(title: "OK", style: .Default) { action -> Void in
                 
-                let storyboard = self.storyboard
                 let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
                 controller.editMemeFlag = false
                 self.presentViewController(controller, animated: true, completion: nil)
@@ -137,7 +128,7 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
         
     }
     
-    //Set the table view cell
+    //-Set the table view cell
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let CellIdentifier = "MemeCell"
@@ -145,7 +136,7 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
         // Here is how to replace the actors array using objectAtIndexPath
         let meme = fetchedResultsController.objectAtIndexPath(indexPath) as! Memes
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(CellIdentifier) as! UITableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier(CellIdentifier)! as UITableViewCell
         
         // This is the new configureCell method
         configureCell(cell, withMeme: meme)
@@ -154,22 +145,20 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
     }
     
     
-    //If a table entry is selected, pull up the Meme Details page and display the selected Meme
+    //-If a table entry is selected, pull up the Meme Details page and display the selected Meme
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         
         let controller =
         storyboard!.instantiateViewControllerWithIdentifier("MemeDetailViewController") as! MemeDetailViewController
         // Similar to the method above
-        let meme = fetchedResultsController.objectAtIndexPath(indexPath) as! Memes
+        //let meme = fetchedResultsController.objectAtIndexPath(indexPath) as! Memes
         
         controller.memes = self.memes
         controller.memeIndexPath = indexPath
         controller.memeIndex = indexPath.row
-        //controller.memedImage = meme.memedImage
-        //controller.memedImage3 = meme.memedImage
         
-        //self.navigationController!.pushViewController(controller, animated: true)
-        self.presentViewController(controller, animated: true, completion: nil)
+        self.navigationController!.pushViewController(controller, animated: true)
+        //self.presentViewController(controller, animated: true, completion: nil)
 
     }
     
@@ -204,7 +193,6 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
                 self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
             
             case .Update:
-                let storyboard = self.storyboard
                 let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
                 controller.memeIndexPath2 = memeIndexPath
                 controller.memeIndex2 = memeIndex
@@ -244,8 +232,8 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
                 tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
                 tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
                 
-            default:
-                return
+//            default:
+//                return
             }
     }
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
@@ -258,7 +246,6 @@ class MemeTableViewController: UIViewController, UITableViewDataSource, NSFetche
     //Button Function - Create a New Meme
     @IBAction func memeEditButton(sender: UIBarButtonItem) {
         
-        let storyboard = self.storyboard
         let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MemeEditorViewController") as! MemeEditorViewController
         
         //controller.memedImage = self.memeImage
